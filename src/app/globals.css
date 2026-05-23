@@ -1,26 +1,91 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f7f4ed;
+  --foreground: #181713;
+  --card: #fffdf7;
+  --card-foreground: #181713;
+  --popover: #fffdf7;
+  --popover-foreground: #181713;
+  --primary: #1f6f68;
+  --primary-foreground: #f8fffc;
+  --secondary: #ece5d8;
+  --secondary-foreground: #27231c;
+  --muted: #ebe4d7;
+  --muted-foreground: #6f675d;
+  --accent: #d94e35;
+  --accent-foreground: #fff8f1;
+  --destructive: #b42318;
+  --destructive-foreground: #fff8f1;
+  --border: #ddd3c2;
+  --input: #ddd3c2;
+  --ring: #1f6f68;
+  --radius: 0.5rem;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #12110f;
+    --foreground: #f5efe4;
+    --card: #1b1915;
+    --card-foreground: #f5efe4;
+    --popover: #1b1915;
+    --popover-foreground: #f5efe4;
+    --primary: #6cc7b9;
+    --primary-foreground: #092420;
+    --secondary: #28231d;
+    --secondary-foreground: #f0e6d8;
+    --muted: #29251f;
+    --muted-foreground: #b7ab9a;
+    --accent: #ff8a63;
+    --accent-foreground: #351006;
+    --destructive: #ff6b5f;
+    --destructive-foreground: #351006;
+    --border: #3c352d;
+    --input: #3c352d;
+    --ring: #6cc7b9;
   }
+}
+
+* {
+  border-color: var(--border);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
 }

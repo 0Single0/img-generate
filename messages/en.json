@@ -1,0 +1,49 @@
+{
+  "App": {
+    "name": "Image Console",
+    "generate": "Generate",
+    "history": "History",
+    "models": "Model Settings",
+    "logout": "Sign out",
+    "language": "Language"
+  },
+  "Auth": {
+    "loginTitle": "Sign in",
+    "registerTitle": "Create account",
+    "email": "Email",
+    "password": "Password",
+    "login": "Sign in",
+    "register": "Create account",
+    "toRegister": "No account yet? Register",
+    "toLogin": "Already have an account? Sign in"
+  },
+  "Generate": {
+    "title": "Generation Studio",
+    "subtitle": "Choose a model, write a prompt, and tune provider-specific parameters.",
+    "prompt": "Prompt",
+    "model": "Model",
+    "operation": "Mode",
+    "generation": "Generate",
+    "edit": "Reference/Edit",
+    "reference": "Reference image",
+    "submit": "Generate"
+  },
+  "Models": {
+    "title": "Model Settings",
+    "subtitle": "Add OpenAI or Seedream models and test provider credentials.",
+    "displayName": "Display name",
+    "provider": "Provider",
+    "modelId": "Model ID",
+    "baseUrl": "Base URL",
+    "apiKey": "API Key",
+    "enabled": "Enabled",
+    "notes": "Notes",
+    "save": "Save model",
+    "test": "Test call"
+  },
+  "History": {
+    "title": "Generation History",
+    "subtitle": "View, download, delete, and reuse previous generations.",
+    "empty": "No history yet"
+  }
+}
