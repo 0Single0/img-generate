@@ -14,8 +14,8 @@ type DynamicParamsProps = {
 
 export const DynamicParams = ({ provider, params, onChange }: DynamicParamsProps) => {
   const sizeOptions = useMemo(
-    () => (provider === "seedream" ? ["2K", "4K", "1024x1024"] : ["1024x1024", "1024x1536", "1536x1024"]),
-    [provider],
+    () => ["1024x1024", "1024x1536", "1536x1024"],
+    [],
   );
 
   return (
@@ -58,21 +58,7 @@ export const DynamicParams = ({ provider, params, onChange }: DynamicParamsProps
             <option value="low">low</option>
           </select>
         </div>
-      ) : (
-        <div className="space-y-2">
-          <Label>Seed</Label>
-          <Input
-            type="number"
-            value={params.seed ?? ""}
-            onChange={(event) =>
-              onChange({
-                ...params,
-                seed: event.target.value ? Number(event.target.value) : undefined,
-              })
-            }
-          />
-        </div>
-      )}
+      ) : null}
     </div>
   );
 };

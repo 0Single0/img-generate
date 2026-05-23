@@ -123,19 +123,25 @@ const requestOpenAIImages = async (
   input: ProviderGenerateInput,
   endpoint: "/images/edits" | "/images/generations",
 ) => {
-  const body = endpoint === "/images/edits"
-    ? await createEditBody(input)
-    : createGenerationBody(input);
+  if (endpoint === "/images/edits") {
+    const body = await createEditBody(input);
+
+    return fetch(`${input.baseUrl}${endpoint}`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${input.apiKey}` },
+      body,
+    });
+  }
+
+  const body = createGenerationBody(input);
 
   return fetch(`${input.baseUrl}${endpoint}`, {
     method: "POST",
-    headers: endpoint === "/images/edits"
-      ? { Authorization: `Bearer ${input.apiKey}` }
-      : {
-          Authorization: `Bearer ${input.apiKey}`,
-          "Content-Type": "application/json",
-        },
-    body: endpoint === "/images/edits" ? body : JSON.stringify(body),
+    headers: {
+      Authorization: `Bearer ${input.apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
   });
 };
 

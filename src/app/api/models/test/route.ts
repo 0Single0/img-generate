@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { decryptApiKey } from "@/lib/crypto/api-key";
 import { generateWithProvider } from "@/lib/providers";
-import { isOpenAICompatibleProvider } from "@/lib/providers/kind";
 import { isMissingSupabaseTableError, missingSchemaMessage } from "@/lib/supabase/errors";
 import { getCurrentUser, unauthorizedResponse } from "@/lib/supabase/auth";
 
@@ -47,7 +46,7 @@ export const POST = async (request: Request) => {
       modelId: model.model_id,
       operation: "generation",
       prompt: body.prompt ?? "A minimal studio product photo of a ceramic cup",
-      params: { n: 1, size: isOpenAICompatibleProvider(model.provider) ? "1024x1024" : "2K" },
+      params: { n: 1, size: "1024x1024" },
     });
 
     return NextResponse.json({ ok: true });

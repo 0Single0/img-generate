@@ -200,6 +200,6 @@ export const testModelConfig = async (model: ModelConfig, prompt = "A simple tes
     modelId: model.model_id,
     operation: "generation",
     prompt,
-    params: { n: 1, size: model.provider === "seedream" ? "2K" : "1024x1024" },
+    params: { n: 1, size: "1024x1024" },
   });
 };

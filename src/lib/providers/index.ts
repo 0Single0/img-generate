@@ -1,5 +1,4 @@
 import { generateWithOpenAI } from "./openai";
-import { generateWithSeedream } from "./seedream";
 import { isOpenAICompatibleProvider } from "./kind";
 import type { ProviderGenerateInput, ProviderImageResult } from "@/types/provider";
 
@@ -21,5 +20,5 @@ export const generateWithProvider = async (
     return generateWithOpenAI(normalizedInput);
   }
 
-  return generateWithSeedream(normalizedInput);
+  throw new Error(`Unsupported provider: ${input.provider}`);
 };
