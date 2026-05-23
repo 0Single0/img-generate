@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -34,6 +35,10 @@ type HistoryListProps = {
 
 type StatusFilter = "all" | GenerationRecord["status"];
 type PreviewUrls = Record<string, string>;
+type PreviewImage = {
+  path: string;
+  url: string;
+};
 type DatePickerFieldProps = {
   value: string;
   min?: string;
@@ -315,6 +320,9 @@ export const HistoryList = ({ emptyLabel }: HistoryListProps) => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [previewUrls, setPreviewUrls] = useState<PreviewUrls>({});
+  const [previewImages, setPreviewImages] = useState<PreviewImage[]>([]);
+  const [previewIndex, setPreviewIndex] = useState(0);
+  const [previewRecord, setPreviewRecord] = useState<GenerationRecord | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
@@ -394,6 +402,29 @@ export const HistoryList = ({ emptyLabel }: HistoryListProps) => {
     setIsLoading(true);
     setPageSize(Number(value));
     setPage(1);
+  }, []);
+
+  const handleOpenPreview = useCallback(async (record: GenerationRecord) => {
+    setPreviewRecord(record);
+    setPreviewIndex(0);
+    setPreviewImages([]);
+
+    const images = await Promise.all(
+      record.output_image_paths.map(async (path) => {
+        const { signedUrl } = await createSignedUrl(path);
+        return { path, url: signedUrl };
+      }),
+    );
+
+    setPreviewImages(images);
+  }, []);
+
+  const handleClosePreview = useCallback((isOpen: boolean) => {
+    if (!isOpen) {
+      setPreviewRecord(null);
+      setPreviewImages([]);
+      setPreviewIndex(0);
+    }
   }, []);
 
   useEffect(() => {
@@ -627,8 +658,8 @@ export const HistoryList = ({ emptyLabel }: HistoryListProps) => {
                         <div className="flex items-center gap-2">
                           <Button
                             className="h-8 rounded-md border border-transparent bg-[#f7f7ff] px-3 text-xs text-[#4b35ef] hover:bg-[#efecff]"
-                            disabled={!previewUrl}
-                            onClick={() => previewUrl && window.open(previewUrl, "_blank")}
+                            disabled={record.output_image_paths.length === 0}
+                            onClick={() => void handleOpenPreview(record)}
                             type="button"
                             variant="ghost"
                           >
@@ -713,6 +744,75 @@ export const HistoryList = ({ emptyLabel }: HistoryListProps) => {
           </Select>
         </div>
       </Card>
+      <Dialog open={Boolean(previewRecord)} onOpenChange={handleClosePreview}>
+        <DialogContent className="max-w-5xl border-[#edf1f7] bg-white p-5">
+          <DialogHeader className="mb-4">
+            <DialogTitle className="text-base font-bold text-[#17213f]">
+              {previewRecord?.prompt || text.imagePreview}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="relative flex min-h-[420px] items-center justify-center overflow-hidden rounded-xl bg-[#eef1f7]">
+              {previewImages.length ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  alt={previewRecord?.prompt || text.imagePreview}
+                  className="max-h-[68vh] w-full object-contain"
+                  src={previewImages[previewIndex]?.url}
+                />
+              ) : (
+                <Loader2 className="size-7 animate-spin text-[#6b50f4]" />
+              )}
+              {previewImages.length > 1 ? (
+                <>
+                  <button
+                    aria-label="Previous image"
+                    className="absolute left-4 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-[#3a456a] shadow-sm backdrop-blur hover:bg-white"
+                    onClick={() =>
+                      setPreviewIndex((current) =>
+                        current === 0 ? previewImages.length - 1 : current - 1,
+                      )
+                    }
+                    type="button"
+                  >
+                    <ChevronLeft className="size-5" />
+                  </button>
+                  <button
+                    aria-label="Next image"
+                    className="absolute right-4 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-[#3a456a] shadow-sm backdrop-blur hover:bg-white"
+                    onClick={() =>
+                      setPreviewIndex((current) =>
+                        current === previewImages.length - 1 ? 0 : current + 1,
+                      )
+                    }
+                    type="button"
+                  >
+                    <ChevronRight className="size-5" />
+                  </button>
+                </>
+              ) : null}
+            </div>
+            {previewImages.length > 1 ? (
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {previewImages.map((image, index) => (
+                  <button
+                    key={image.path}
+                    className={cn(
+                      "h-16 w-24 shrink-0 overflow-hidden rounded-md border bg-[#eef1f7]",
+                      previewIndex === index ? "border-[#6b50f4]" : "border-[#edf1f7]",
+                    )}
+                    onClick={() => setPreviewIndex(index)}
+                    type="button"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img alt="" className="h-full w-full object-cover" src={image.url} />
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

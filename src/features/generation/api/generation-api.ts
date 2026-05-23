@@ -21,3 +21,6 @@ export const createGeneration = (body: CreateGenerationBody) =>
 
 export const listGenerations = (params?: GenerationListParams) =>
   apiGet<GenerationListResponse>("/generations", { params });
+
+export const createSignedUrl = (path: string) =>
+  apiPost<{ signedUrl: string }, { path: string }>("/storage/signed-url", { path });

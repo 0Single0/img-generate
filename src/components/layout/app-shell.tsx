@@ -1,15 +1,21 @@
 import Link from "next/link";
-import { Bell, ChevronDown, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { AppNav } from "./app-nav";
+import { LanguageSwitcher } from "./language-switcher";
+import { UserMenu } from "./user-menu";
 import type { Locale } from "@/lib/i18n/routing";
 
 type AppShellProps = {
   children: React.ReactNode;
   locale: Locale;
+  user: {
+    email: string;
+    name: string | null;
+  };
 };
 
-export const AppShell = async ({ children, locale }: AppShellProps) => {
+export const AppShell = async ({ children, locale, user }: AppShellProps) => {
   const t = await getTranslations("App");
 
   return (
@@ -28,27 +34,9 @@ export const AppShell = async ({ children, locale }: AppShellProps) => {
             </span>
           </span>
         </Link>
-        <div className="flex items-center gap-[clamp(12px,1.25vw,24px)] text-[#495579]">
-          <button
-            aria-label="通知"
-            className="relative hidden size-9 items-center justify-center rounded-full transition-colors hover:bg-[#f2f0ff] sm:flex"
-            type="button"
-          >
-            <Bell className="size-5" strokeWidth={1.9} />
-            <span className="absolute right-0 top-0 flex size-4 items-center justify-center rounded-full bg-[#5c49f5] text-[10px] font-bold text-white">
-              3
-            </span>
-          </button>
-          <button
-            className="flex items-center gap-2 rounded-full px-2 py-1 text-[clamp(14px,0.78vw,16px)] font-medium transition-colors hover:bg-[#f2f0ff]"
-            type="button"
-          >
-            <span className="flex size-[clamp(34px,2vw,42px)] items-center justify-center overflow-hidden rounded-full bg-[radial-gradient(circle_at_50%_28%,#dcd7ff_0_23%,#a493ef_24%_100%)]">
-              <span className="mt-5 size-8 rounded-full bg-[#f4efff]/85" />
-            </span>
-            <span className="hidden sm:block">Admin</span>
-            <ChevronDown className="hidden size-5 sm:block" strokeWidth={2} />
-          </button>
+        <div className="flex items-center gap-[clamp(8px,0.9vw,18px)] text-[#495579]">
+          <LanguageSwitcher label={t("language")} />
+          <UserMenu locale={locale} user={user} logoutLabel={t("logout")} />
         </div>
       </header>
       <aside className="fixed bottom-0 left-0 top-[var(--shell-header)] z-20 hidden w-[var(--shell-sidebar)] border-r border-[#e6eaf2] bg-white/74 shadow-[12px_0_35px_rgba(52,67,125,0.04)] backdrop-blur-xl md:block">

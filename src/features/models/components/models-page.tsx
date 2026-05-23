@@ -2,7 +2,6 @@
 
 import { Plus } from "lucide-react";
 import { useCallback, useState } from "react";
-import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
 import { ModelConfigDialog } from "./model-config-dialog";
 import { ModelList } from "./model-list";
@@ -30,17 +29,41 @@ export const ModelsPage = ({ title, subtitle }: ModelsPageProps) => {
   }, []);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <PageHeader title={title} subtitle={subtitle} />
-        <Button onClick={handleCreate}>
-          <Plus className="size-4" />
-          新增模型
-        </Button>
+    <div className="mx-auto flex h-full min-h-[calc(100dvh-var(--shell-header)-clamp(40px,4.7vw,96px))] max-w-[1680px] flex-col">
+      <div className="mb-5 flex flex-col gap-4 sm:mb-7 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h1 className="text-[clamp(24px,2vw,34px)] font-bold text-[#101a40]">{title}</h1>
+          <p className="mt-2 text-sm font-medium leading-6 text-[#697494] sm:text-base">
+            {subtitle}
+          </p>
+        </div>
       </div>
-      {error ? <p className="text-sm text-destructive">{error}</p> : null}
-      {isLoading ? <p className="text-sm text-muted-foreground">Loading...</p> : null}
-      <ModelList models={models} onDelete={removeModel} onEdit={handleEdit} onTest={runTest} />
+
+      <section className="flex flex-1 flex-col rounded-xl border border-[#e7ebf5] bg-white/86 p-4 shadow-[0_18px_48px_rgba(58,68,116,0.08)] backdrop-blur-xl sm:p-5 lg:p-7">
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-base font-bold text-[#17213f] sm:text-lg">模型列表</h2>
+            <p className="mt-1 text-xs font-medium text-[#8b95b1] sm:text-sm">
+              共 {models.length} 个模型配置
+            </p>
+          </div>
+          <Button
+            className="h-10 rounded-lg bg-[#6b50f4] px-4 text-sm font-bold text-white shadow-[0_12px_24px_rgba(91,77,245,0.24)] hover:bg-[#5c45df] sm:h-11 sm:px-5"
+            onClick={handleCreate}
+          >
+            <Plus className="size-4" />
+            新增模型
+          </Button>
+        </div>
+
+        {error ? (
+          <p className="mb-4 rounded-lg bg-[#fff4f4] px-3 py-2 text-sm text-[#d73737]">{error}</p>
+        ) : null}
+        {isLoading ? <p className="text-sm text-[#7a84a6]">Loading...</p> : null}
+
+        <ModelList models={models} onDelete={removeModel} onEdit={handleEdit} onTest={runTest} />
+      </section>
+
       <ModelConfigDialog
         open={dialogOpen}
         model={editingModel}

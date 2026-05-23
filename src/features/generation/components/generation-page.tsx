@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { PageHeader } from "@/components/common/page-header";
 import { listModels } from "@/features/models/api/model-api";
 import { GenerationForm } from "./generation-form";
 import type { ModelConfig } from "@/types/provider";
@@ -11,7 +10,9 @@ type GenerationPageProps = {
   subtitle: string;
 };
 
-export const GenerationPage = ({ title, subtitle }: GenerationPageProps) => {
+export const GenerationPage = (props: GenerationPageProps) => {
+  void props;
+
   const [models, setModels] = useState<ModelConfig[]>([]);
   const [error, setError] = useState("");
 
@@ -28,11 +29,9 @@ export const GenerationPage = ({ title, subtitle }: GenerationPageProps) => {
   }, []);
 
   return (
-    <div className="space-y-6">
-      <PageHeader title={title} subtitle={subtitle} />
+    <div>
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
       <GenerationForm models={models} />
     </div>
   );
 };
-

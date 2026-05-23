@@ -19,5 +19,20 @@ export default async function ProtectedLayout({ children, params }: ProtectedLay
     redirect(`/${locale}/login`);
   }
 
-  return <AppShell locale={locale as Locale}>{children}</AppShell>;
+  return (
+    <AppShell
+      locale={locale as Locale}
+      user={{
+        email: user.email ?? "",
+        name:
+          typeof user.user_metadata?.name === "string"
+            ? user.user_metadata.name
+            : typeof user.user_metadata?.full_name === "string"
+              ? user.user_metadata.full_name
+              : null,
+      }}
+    >
+      {children}
+    </AppShell>
+  );
 }
