@@ -41,29 +41,91 @@ const uploadBase64Image = async (
   return path;
 };
 
-export const GET = async () => {
+const toPositiveInteger = (value: string | null, fallback: number, max: number) => {
+  const parsed = Number(value);
+
+  if (!Number.isInteger(parsed) || parsed < 1) {
+    return fallback;
+  }
+
+  return Math.min(parsed, max);
+};
+
+export const GET = async (request: Request) => {
   const { supabase, user } = await getCurrentUser();
 
   if (!user) {
     return unauthorizedResponse();
   }
 
-  const { data, error } = await supabase
+  const { searchParams } = new URL(request.url);
+  const q = searchParams.get("q")?.trim();
+  const status = searchParams.get("status");
+  const model = searchParams.get("model");
+  const start = searchParams.get("start");
+  const end = searchParams.get("end");
+  const page = toPositiveInteger(searchParams.get("page"), 1, 10000);
+  const pageSize = toPositiveInteger(searchParams.get("pageSize"), 10, 100);
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  let query = supabase
     .from("generation_records")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false })
-    .limit(50);
+    .select("*", { count: "exact" })
+    .eq("user_id", user.id);
 
-  if (error) {
-    if (isMissingSupabaseTableError(error)) {
-      return NextResponse.json([]);
-    }
-
-    return NextResponse.json({ message: error.message }, { status: 500 });
+  if (q) {
+    query = query.or(`request_id.ilike.%${q}%,prompt.ilike.%${q}%`);
   }
 
-  return NextResponse.json(data ?? []);
+  if (status && ["pending", "succeeded", "failed"].includes(status)) {
+    query = query.eq("status", status);
+  }
+
+  if (model && model !== "all") {
+    query = query.eq("provider", model);
+  }
+
+  if (start) {
+    query = query.gte("created_at", start);
+  }
+
+  if (end) {
+    query = query.lte("created_at", end);
+  }
+
+  const modelsQuery = supabase
+    .from("generation_records")
+    .select("provider")
+    .eq("user_id", user.id);
+
+  const [{ data, error, count }, { data: modelRows, error: modelsError }] = await Promise.all([
+    query
+    .order("created_at", { ascending: false })
+      .range(from, to),
+    modelsQuery,
+  ]);
+
+  if (error || modelsError) {
+    const responseError = error ?? modelsError;
+
+    if (isMissingSupabaseTableError(error)) {
+      return NextResponse.json({ items: [], total: 0, page, pageSize, models: [] });
+    }
+
+    return NextResponse.json(
+      { message: responseError?.message ?? "Failed to load generations." },
+      { status: 500 },
+    );
+  }
+
+  return NextResponse.json({
+    items: data ?? [],
+    total: count ?? 0,
+    page,
+    pageSize,
+    models: Array.from(new Set((modelRows ?? []).map((row) => row.provider))),
+  });
 };
 
 export const POST = async (request: Request) => {

@@ -1,4 +1,3 @@
-import { PageHeader } from "@/components/common/page-header";
 import { HistoryList } from "./history-list";
 
 type HistoryPageProps = {
@@ -7,9 +6,8 @@ type HistoryPageProps = {
   emptyLabel: string;
 };
 
-export const HistoryPage = ({ title, subtitle, emptyLabel }: HistoryPageProps) => (
-  <div className="space-y-6">
-    <PageHeader title={title} subtitle={subtitle} />
+export const HistoryPage = ({ emptyLabel }: HistoryPageProps) => (
+  <div>
     <HistoryList emptyLabel={emptyLabel} />
   </div>
 );

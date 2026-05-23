@@ -3,6 +3,7 @@
 ## Project Rules
 
 - Use `pnpm` for all package and script commands.
+- Do not run `pnpm build` automatically after code changes unless the user explicitly asks for a build.
 - Keep code in `src/`; route files should compose feature components and avoid carrying business logic.
 - Use App Router route groups for authenticated and unauthenticated areas.
 - Prefer `type` for TypeScript declarations. Avoid `interface` unless a library contract requires it.

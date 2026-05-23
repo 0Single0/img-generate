@@ -132,33 +132,39 @@ export const AuthForm = ({ mode, locale }: AuthFormProps) => {
       />
 
       <div
-        className={`absolute inset-y-0 z-20 flex w-full items-center justify-center bg-white px-6 py-8 transition-[left] duration-500 ease-[cubic-bezier(.22,1,.36,1)] lg:w-[50%] lg:px-[7vw] lg:py-0 ${
+        className={`absolute inset-y-0 z-20 flex w-full items-center justify-center bg-white px-6 py-8 transition-[left] duration-500 ease-[cubic-bezier(.22,1,.36,1)] lg:w-[50%] lg:bg-transparent lg:px-[7vw] lg:py-0 ${
           isRegister ? "left-1/2" : "left-0"
         }`}
       >
         <svg
-          className={`pointer-events-none absolute inset-y-0 hidden h-full w-[86px] lg:block ${
-            isRegister ? "left-[-84px]" : "right-[-84px]"
+          className={`pointer-events-none absolute inset-y-0 hidden h-full w-[calc(100%+160px)] lg:block ${
+            isRegister ? "right-0" : "left-0"
           }`}
-          viewBox="0 0 86 1000"
+          viewBox="0 0 880 1000"
           preserveAspectRatio="none"
           aria-hidden="true"
         >
           {isRegister ? (
             <>
               <path
-                d="M86 0 H16 C28 280 28 720 4 1000 H86 Z"
+                 d="M96 0 C128 210 150 405 148 560 C146 725 126 875 98 1000 L115 1000 C142 875 164 725 166 560 C168 405 144 210 112 0 Z"
                 fill="#e9e3ff"
               />
-              <path d="M86 0 H16 C41 280 41 720 16 1000 H86 Z" fill="white" />
+              <path
+                   d="M880 0 H112 C144 210 168 405 166 560 C164 725 142 875 115 1000 H880 Z"
+                fill="white"
+              />
             </>
           ) : (
             <>
               <path
-                d="M0 0 H70 C58 280 58 720 82 1000 H0 Z"
+                d="M768 0 C736 210 712 405 714 560 C716 725 738 875 765 1000 L782 1000 C754 875 734 725 732 560 C730 405 752 210 784 0 Z"
                 fill="#e9e3ff"
               />
-              <path d="M0 0 H70 C45 280 45 720 70 1000 H0 Z" fill="white" />
+              <path
+                  d="M0 0 H768 C736 210 712 405 714 560 C716 725 738 875 765 1000 H0 Z"
+                fill="white"
+              />
             </>
           )}
         </svg>

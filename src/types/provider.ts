@@ -53,6 +53,7 @@ export type GenerationParams = {
 
 export type GenerationRecord = {
   id: string;
+  request_id?: string | null;
   user_id: string;
   model_config_id: string;
   provider: ImageProvider;
@@ -65,6 +66,24 @@ export type GenerationRecord = {
   status: "pending" | "succeeded" | "failed";
   error_message?: string | null;
   created_at?: string;
+};
+
+export type GenerationListParams = {
+  q?: string;
+  status?: GenerationRecord["status"] | "all";
+  model?: string;
+  start?: string;
+  end?: string;
+  page?: number;
+  pageSize?: number;
+};
+
+export type GenerationListResponse = {
+  items: GenerationRecord[];
+  total: number;
+  page: number;
+  pageSize: number;
+  models: ImageProvider[];
 };
 
 export type ProviderImageResult = {

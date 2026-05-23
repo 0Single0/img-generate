@@ -1,5 +1,7 @@
 import { apiGet, apiPost } from "@/lib/http/client";
 import type {
+  GenerationListParams,
+  GenerationListResponse,
   GenerationOperation,
   GenerationParams,
   GenerationRecord,
@@ -17,4 +19,5 @@ export type CreateGenerationBody = {
 export const createGeneration = (body: CreateGenerationBody) =>
   apiPost<GenerationRecord, CreateGenerationBody>("/generations", body);
 
-export const listGenerations = () => apiGet<GenerationRecord[]>("/generations");
+export const listGenerations = (params?: GenerationListParams) =>
+  apiGet<GenerationListResponse>("/generations", { params });
