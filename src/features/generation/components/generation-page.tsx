@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { listModels } from "@/features/models/api/model-api";
 import { GenerationForm } from "./generation-form";
@@ -13,6 +14,7 @@ type GenerationPageProps = {
 export const GenerationPage = (props: GenerationPageProps) => {
   void props;
 
+  const t = useTranslations("Generate");
   const [models, setModels] = useState<ModelConfig[]>([]);
   const [error, setError] = useState("");
 
@@ -31,7 +33,7 @@ export const GenerationPage = (props: GenerationPageProps) => {
   return (
     <div className="flex min-h-full w-full flex-1 flex-col">
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
-      <GenerationForm models={models} />
+      <GenerationForm emptyModelLabel={t("missingModels")} models={models} />
     </div>
   );
 };

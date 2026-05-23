@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { Box, Clock3, Image } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { Link, usePathname } from "@/lib/i18n/navigation";
 import { cn } from "@/lib/utils/cn";
 import type { Locale } from "@/lib/i18n/routing";
 
@@ -16,13 +15,14 @@ type AppNavProps = {
 };
 
 const navItems = (locale: Locale, labels: AppNavProps["labels"]) => [
-  { href: `/${locale}/generate`, label: labels.generate, icon: Image },
-  { href: `/${locale}/history`, label: labels.history, icon: Clock3 },
-  { href: `/${locale}/settings/models`, label: labels.models, icon: Box },
+  { href: "/generate", label: labels.generate, icon: Image },
+  { href: "/history", label: labels.history, icon: Clock3 },
+  { href: "/settings/models", label: labels.models, icon: Box },
 ];
 
 export const AppNav = ({ locale, labels }: AppNavProps) => {
   const pathname = usePathname();
+  void locale;
   const items = navItems(locale, labels);
 
   return (

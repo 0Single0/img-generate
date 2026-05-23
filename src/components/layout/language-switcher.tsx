@@ -10,13 +10,15 @@ type LanguageSwitcherProps = {
 
 export const LanguageSwitcher = ({ label }: LanguageSwitcherProps) => {
   const pathname = usePathname();
-  const nextLocale = pathname.startsWith("/en") ? "zh" : "en";
-  const nextPath = pathname.replace(/^\/(zh|en)/, `/${nextLocale}`);
-  const currentLabel = pathname.startsWith("/en") ? "EN" : "中文";
+  const isEnglish = pathname.startsWith("/en");
+  const nextLocale = isEnglish ? "zh" : "en";
+  const nextPath =
+    pathname.replace(/^\/(zh|en)(?=\/|$)/, `/${nextLocale}`) || `/${nextLocale}/generate`;
+  const currentLabel = isEnglish ? "EN" : "中文";
 
   return (
     <Link
-      href={nextPath || `/${nextLocale}/generate`}
+      href={nextPath}
       aria-label={label}
       className="inline-flex h-10 items-center gap-2 rounded-lg px-2.5 text-sm font-semibold text-[#51607f] transition-colors hover:bg-[#f2f0ff] hover:text-[#4b35ef] sm:px-3"
     >

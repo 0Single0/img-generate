@@ -89,9 +89,7 @@ const statusLabels: Record<GenerationRecord["status"], string> = {
 
 const modelLabels: Record<string, string> = {
   all: text.allModels,
-  chatgpt: "ChatGPT Image",
   openai: "OpenAI",
-  seedream: "Seedance",
 };
 
 const statusFilters: Array<{ label: string; value: StatusFilter }> = [

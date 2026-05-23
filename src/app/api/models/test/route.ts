@@ -24,6 +24,7 @@ export const POST = async (request: Request) => {
     .select("provider,model_id,base_url,api_key_encrypted")
     .eq("id", body.modelId)
     .eq("user_id", user.id)
+    .eq("provider", "openai")
     .single();
 
   if (error || !model) {

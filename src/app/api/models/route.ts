@@ -14,8 +14,9 @@ export const GET = async () => {
 
   const { data, error } = await supabase
     .from("model_configs")
-    .select("id,user_id,model_option_id,provider,provider_label,display_name,model_id,model_label,base_url,enabled,notes,created_at,updated_at")
+    .select("id,user_id,model_option_id,provider,provider_label,provider_icon,display_name,model_id,model_label,base_url,enabled,notes,created_at,updated_at")
     .eq("user_id", user.id)
+    .eq("provider", "openai")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -44,8 +45,9 @@ export const POST = async (request: Request) => {
 
   const { data: option, error: optionError } = await supabase
     .from("model_options")
-    .select("id,provider_key,provider_label,model_id,model_label")
+    .select("id,provider_key,provider_label,icon,model_id,model_label")
     .eq("id", body.model_option_id)
+    .eq("provider_key", "openai")
     .eq("enabled", true)
     .single();
 
@@ -62,6 +64,7 @@ export const POST = async (request: Request) => {
     model_option_id: option.id,
     provider: option.provider_key,
     provider_label: option.provider_label,
+    provider_icon: option.icon ?? null,
     display_name: body.display_name,
     model_id: option.model_id,
     model_label: option.model_label,
@@ -74,7 +77,7 @@ export const POST = async (request: Request) => {
   const { data, error } = await supabase
     .from("model_configs")
     .insert(insertPayload)
-    .select("id,user_id,model_option_id,provider,provider_label,display_name,model_id,model_label,base_url,enabled,notes,created_at,updated_at")
+    .select("id,user_id,model_option_id,provider,provider_label,provider_icon,display_name,model_id,model_label,base_url,enabled,notes,created_at,updated_at")
     .single<ModelConfig>();
 
   if (error) {
@@ -107,8 +110,9 @@ export const PATCH = async (request: Request) => {
 
   const { data: option, error: optionError } = await supabase
     .from("model_options")
-    .select("id,provider_key,provider_label,model_id,model_label")
+    .select("id,provider_key,provider_label,icon,model_id,model_label")
     .eq("id", body.model_option_id)
+    .eq("provider_key", "openai")
     .eq("enabled", true)
     .single();
 
@@ -124,6 +128,7 @@ export const PATCH = async (request: Request) => {
     model_option_id: option.id,
     provider: option.provider_key,
     provider_label: option.provider_label,
+    provider_icon: option.icon ?? null,
     display_name: body.display_name,
     model_id: option.model_id,
     model_label: option.model_label,
@@ -138,7 +143,7 @@ export const PATCH = async (request: Request) => {
     .update(updatePayload)
     .eq("id", body.id)
     .eq("user_id", user.id)
-    .select("id,user_id,model_option_id,provider,provider_label,display_name,model_id,model_label,base_url,enabled,notes,created_at,updated_at")
+    .select("id,user_id,model_option_id,provider,provider_label,provider_icon,display_name,model_id,model_label,base_url,enabled,notes,created_at,updated_at")
     .single<ModelConfig>();
 
   if (error) {

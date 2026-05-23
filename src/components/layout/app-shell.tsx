@@ -16,7 +16,7 @@ type AppShellProps = {
 };
 
 export const AppShell = async ({ children, locale, user }: AppShellProps) => {
-  const t = await getTranslations("App");
+  const t = await getTranslations({ locale, namespace: "App" });
 
   return (
     <div className="min-h-screen bg-[#f7f8ff] text-[#0b153a] [--shell-header:clamp(62px,4vw,82px)] [--shell-sidebar:clamp(176px,11.5vw,228px)]">

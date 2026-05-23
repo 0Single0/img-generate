@@ -1,7 +1,9 @@
 "use client";
 
-import { EyeOff, Info } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useCallback, useMemo, useState } from "react";
+import { ProviderIcon } from "@/components/provider-icon";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -37,33 +39,19 @@ type ModelConfigFormProps = Omit<ModelConfigDialogProps, "open"> & {
 type ProviderItem = {
   value: ImageProvider;
   label: string;
+  icon?: string | null;
 };
 
-const text = {
-  addTitle: "新增模型",
-  apiKeyHelp: "用于身份验证的密钥，不会被存储为明文",
-  apiKeyPlaceholder: "请输入 API Key",
-  baseUrl: "生图 Base URL",
-  baseUrlPlaceholder: "https://api.example.com/v1",
-  cancel: "取消",
-  displayName: "模型展示名称",
-  displayNamePlaceholder: "请输入模型展示名称（如：ChatGPT Image2）",
-  editTitle: "编辑模型",
-  enabled: "是否启用",
-  enabledHelp: "停用后将无法使用该模型生成图像",
-  info: "配置模型信息以启用图像生成服务",
-  modelType: "模型类型",
-  notes: "备注",
-  notesPlaceholder: "请输入备注信息（可选）",
-  save: "保存",
-  selectModel: "选择模型 ID",
-  selectProvider: "选择模型类型",
-} as const;
-
 const getProviders = (options: ModelOption[]): ProviderItem[] => {
-  const entries = new Map<ImageProvider, string>();
-  options.forEach((option) => entries.set(option.provider_key, option.provider_label));
-  return Array.from(entries, ([value, label]) => ({ value, label }));
+  const entries = new Map<ImageProvider, ProviderItem>();
+  options.forEach((option) => {
+    entries.set(option.provider_key, {
+      value: option.provider_key,
+      label: option.provider_label,
+      icon: option.icon,
+    });
+  });
+  return Array.from(entries.values());
 };
 
 const ModelConfigDialogForm = ({
@@ -73,16 +61,16 @@ const ModelConfigDialogForm = ({
   onOpenChange,
   onSave,
 }: ModelConfigFormProps) => {
+  const t = useTranslations("Models");
   const providers = useMemo(() => getProviders(options), [options]);
   const [provider, setProvider] = useState<ImageProvider>(
-    initialOption?.provider_key ?? providers[0]?.value ?? "chatgpt",
+    initialOption?.provider_key ?? providers[0]?.value ?? "openai",
   );
   const [modelOptionId, setModelOptionId] = useState(initialOption?.id ?? "");
   const [displayName, setDisplayName] = useState(model?.display_name ?? "");
-  const [baseUrl, setBaseUrl] = useState(
-    model?.base_url ?? initialOption?.default_base_url ?? "",
-  );
+  const [baseUrl, setBaseUrl] = useState(model?.base_url ?? initialOption?.default_base_url ?? "");
   const [apiKey, setApiKey] = useState("");
+  const [showApiKey, setShowApiKey] = useState(false);
   const [enabled, setEnabled] = useState(model?.enabled ?? true);
   const [notes, setNotes] = useState(model?.notes ?? "");
   const [error, setError] = useState("");
@@ -90,11 +78,6 @@ const ModelConfigDialogForm = ({
   const filteredOptions = useMemo(
     () => options.filter((option) => option.provider_key === provider),
     [options, provider],
-  );
-
-  const selectedOption = useMemo(
-    () => options.find((option) => option.id === modelOptionId),
-    [modelOptionId, options],
   );
 
   const handleProviderChange = useCallback(
@@ -115,6 +98,10 @@ const ModelConfigDialogForm = ({
     },
     [options],
   );
+
+  const handleToggleApiKeyVisibility = useCallback(() => {
+    setShowApiKey((current) => !current);
+  }, []);
 
   const handleSubmit = useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
@@ -140,33 +127,28 @@ const ModelConfigDialogForm = ({
   );
 
   return (
-    <form className="space-y-5" onSubmit={handleSubmit}>
-      <div className="flex items-center gap-3 rounded-lg border border-[#e4e0ff] bg-[#f8f6ff] px-4 py-3 text-sm font-bold text-[#6b50f4]">
-        <Info className="size-4 shrink-0 fill-[#6b50f4] text-white" />
-        {text.info}
-      </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-bold text-[#202a50]">
-          {text.displayName} <span className="text-[#df4d61]">*</span>
+    <form className="space-y-4 sm:space-y-5" onSubmit={handleSubmit}>
+      <div className="mt-2 space-y-2">
+        <label className="text-xs font-bold text-[#202a50] sm:text-sm">
+          {t("displayName")} <span className="text-[#df4d61]">*</span>
         </label>
         <Input
-          className="h-11 rounded-lg border-[#dfe5f1] bg-white px-4 text-sm font-medium text-[#24304f] placeholder:text-[#a5afc8] focus:ring-[#6f5cff]/25"
-          value={displayName}
-          required
-          placeholder={text.displayNamePlaceholder}
+          className="h-9 rounded-lg border-[#dfe5f1] bg-white px-3 text-xs font-medium text-[#24304f] placeholder:text-[#a5afc8] focus:ring-[#6f5cff]/25 sm:h-10 sm:px-4 sm:text-sm"
           onChange={(event) => setDisplayName(event.target.value)}
+          placeholder={t("displayNamePlaceholder")}
+          required
+          value={displayName}
         />
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-bold text-[#202a50]">
-          {text.modelType} <span className="text-[#df4d61]">*</span>
+        <label className="text-xs font-bold text-[#202a50] sm:text-sm">
+          {t("modelType")} <span className="text-[#df4d61]">*</span>
         </label>
-        <div className="grid gap-3 md:grid-cols-[1fr_28px_1.2fr] md:items-center">
+        <div className="grid gap-2.5 sm:gap-3 md:grid-cols-[1fr_28px_1.2fr] md:items-center">
           <Select value={provider} onValueChange={(value) => handleProviderChange(value as ImageProvider)}>
-            <SelectTrigger className="h-11 rounded-lg border-[#dfe5f1] bg-white px-4 text-sm font-semibold text-[#263153] shadow-none focus:ring-[#6f5cff]/25">
-              <SelectValue placeholder={text.selectProvider} />
+            <SelectTrigger className="h-9 rounded-lg border-[#dfe5f1] bg-white px-3 text-xs font-semibold text-[#263153] shadow-none focus:ring-[#6f5cff]/25 sm:h-10 sm:px-4 sm:text-sm">
+              <SelectValue placeholder={t("selectProvider")} />
             </SelectTrigger>
             <SelectContent
               className="rounded-lg border-[#dfe5f1] bg-white p-1 shadow-[0_14px_32px_rgba(49,58,112,0.14)]"
@@ -175,20 +157,29 @@ const ModelConfigDialogForm = ({
               {providers.map((item) => (
                 <SelectItem
                   key={item.value}
-                  className="rounded-md py-2 pl-8 text-sm font-semibold text-[#263153] data-[highlighted]:bg-[#f0edff]"
+                  className="rounded-md py-1.5 pl-8 text-xs font-semibold text-[#263153] data-[highlighted]:bg-[#f0edff] sm:py-2 sm:text-sm"
                   value={item.value}
                 >
-                  {item.label}
+                  <div className="flex items-center gap-2">
+                    <ProviderIcon
+                      alt={item.label}
+                      className="size-5 rounded-sm bg-white sm:size-5"
+                      fallbackClassName="text-[9px]"
+                      label={item.label}
+                      src={item.icon}
+                    />
+                    <span>{item.label}</span>
+                  </div>
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
 
-          <span className="hidden text-center text-lg font-semibold text-[#a0abc4] md:block">→</span>
+          <span className="hidden text-center text-lg font-semibold text-[#a0abc4] md:block">-&gt;</span>
 
           <Select value={modelOptionId} onValueChange={handleModelOptionChange}>
-            <SelectTrigger className="h-11 rounded-lg border-[#dfe5f1] bg-white px-4 text-sm font-semibold text-[#263153] shadow-none focus:ring-[#6f5cff]/25">
-              <SelectValue placeholder={text.selectModel} />
+            <SelectTrigger className="h-9 rounded-lg border-[#dfe5f1] bg-white px-3 text-xs font-semibold text-[#263153] shadow-none focus:ring-[#6f5cff]/25 sm:h-10 sm:px-4 sm:text-sm">
+              <SelectValue placeholder={t("selectModel")} />
             </SelectTrigger>
             <SelectContent
               className="rounded-lg border-[#dfe5f1] bg-white p-1 shadow-[0_14px_32px_rgba(49,58,112,0.14)]"
@@ -197,7 +188,7 @@ const ModelConfigDialogForm = ({
               {filteredOptions.map((option) => (
                 <SelectItem
                   key={option.id}
-                  className="rounded-md py-2 pl-8 text-sm font-semibold text-[#263153] data-[highlighted]:bg-[#f0edff]"
+                  className="rounded-md py-1.5 pl-8 text-xs font-semibold text-[#263153] data-[highlighted]:bg-[#f0edff] sm:py-2 sm:text-sm"
                   value={option.id}
                 >
                   {option.model_id}
@@ -206,51 +197,58 @@ const ModelConfigDialogForm = ({
             </SelectContent>
           </Select>
         </div>
-        {selectedOption ? (
-          <p className="text-xs font-medium text-[#8b95b1]">{selectedOption.model_label}</p>
-        ) : null}
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-bold text-[#202a50]">
-          {text.baseUrl} <span className="text-[#df4d61]">*</span>
+        <label className="text-xs font-bold text-[#202a50] sm:text-sm">
+          {t("baseUrl")} <span className="text-[#df4d61]">*</span>
         </label>
         <Input
-          className="h-11 rounded-lg border-[#dfe5f1] bg-white px-4 text-sm font-medium text-[#24304f] placeholder:text-[#a5afc8] focus:ring-[#6f5cff]/25"
-          value={baseUrl}
-          required
-          placeholder={text.baseUrlPlaceholder}
+          className="h-9 rounded-lg border-[#dfe5f1] bg-white px-3 text-xs font-medium text-[#24304f] placeholder:text-[#a5afc8] focus:ring-[#6f5cff]/25 sm:h-10 sm:px-4 sm:text-sm"
           onChange={(event) => setBaseUrl(event.target.value)}
+          placeholder="https://api.example.com/v1"
+          required
+          value={baseUrl}
         />
       </div>
 
       <div className="grid gap-2 md:grid-cols-[90px_1fr] md:items-center">
-        <label className="text-sm font-bold text-[#202a50]">
+        <label className="text-xs font-bold text-[#202a50] sm:text-sm">
           API Key <span className="text-[#df4d61]">{model ? "" : "*"}</span>
         </label>
         <div>
           <div className="relative">
             <Input
-              className="h-11 rounded-lg border-[#dfe5f1] bg-white px-4 pr-11 text-sm font-medium text-[#24304f] placeholder:text-[#a5afc8] focus:ring-[#6f5cff]/25"
-              type="password"
-              value={apiKey}
-              required={!model}
-              placeholder={model ? "留空则保留当前 API Key" : text.apiKeyPlaceholder}
+              className="h-9 rounded-lg border-[#dfe5f1] bg-white px-3 pr-10 text-xs font-medium text-[#24304f] placeholder:text-[#a5afc8] focus:ring-[#6f5cff]/25 sm:h-10 sm:px-4 sm:pr-11 sm:text-sm"
               onChange={(event) => setApiKey(event.target.value)}
+              placeholder={model ? t("keepApiKeyPlaceholder") : t("apiKeyPlaceholder")}
+              required={!model}
+              type={showApiKey ? "text" : "password"}
+              value={apiKey}
             />
-            <EyeOff className="absolute right-4 top-1/2 size-4 -translate-y-1/2 text-[#8791ad]" />
+            <button
+              aria-label={showApiKey ? "Hide API key" : "Show API key"}
+              className="absolute right-2 top-1/2 inline-flex size-6 -translate-y-1/2 items-center justify-center rounded-md text-[#8791ad] transition-colors hover:bg-[#f3f5fb] hover:text-[#5c6787] sm:right-3"
+              onClick={handleToggleApiKeyVisibility}
+              type="button"
+            >
+              {showApiKey ? (
+                <Eye className="size-3.5 sm:size-4" />
+              ) : (
+                <EyeOff className="size-3.5 sm:size-4" />
+              )}
+            </button>
           </div>
-          <p className="mt-1.5 text-xs font-medium text-[#8b95b1]">{text.apiKeyHelp}</p>
         </div>
       </div>
 
       <div className="grid gap-2 md:grid-cols-[90px_1fr] md:items-center">
-        <label className="text-sm font-bold text-[#202a50]">{text.enabled}</label>
-        <label className="flex items-center gap-3 text-sm font-medium text-[#697494]">
+        <label className="text-xs font-bold text-[#202a50] sm:text-sm">{t("enabled")}</label>
+        <label className="flex items-center gap-2.5 text-xs font-medium leading-5 text-[#697494] sm:gap-3 sm:text-sm">
           <button
             aria-pressed={enabled}
             className={cn(
-              "relative h-6 w-11 rounded-full transition-colors",
+              "relative h-5 w-9 shrink-0 rounded-full transition-colors sm:h-6 sm:w-11",
               enabled ? "bg-[#6b50f4]" : "bg-[#dce2ef]",
             )}
             onClick={() => setEnabled((current) => !current)}
@@ -258,26 +256,26 @@ const ModelConfigDialogForm = ({
           >
             <span
               className={cn(
-                "absolute top-1 size-4 rounded-full bg-white shadow-[0_2px_6px_rgba(28,36,74,0.18)] transition-all",
-                enabled ? "left-[23px]" : "left-1",
+                "absolute top-0.5 size-4 rounded-full bg-white shadow-[0_2px_6px_rgba(28,36,74,0.18)] transition-all sm:top-1",
+                enabled ? "left-[17px] sm:left-[23px]" : "left-0.5 sm:left-1",
               )}
             />
           </button>
-          {text.enabledHelp}
+          {t("enabledHelp")}
         </label>
       </div>
 
       <div className="grid gap-2 md:grid-cols-[90px_1fr]">
-        <label className="pt-2 text-sm font-bold text-[#202a50]">{text.notes}</label>
+        <label className="pt-1 text-xs font-bold text-[#202a50] sm:pt-2 sm:text-sm">{t("notes")}</label>
         <div className="relative">
           <Textarea
-            className="min-h-[100px] resize-none rounded-lg border-[#dfe5f1] bg-white px-4 py-3 pr-16 text-sm font-medium text-[#24304f] placeholder:text-[#a5afc8] focus:ring-[#6f5cff]/25"
-            value={notes}
+            className="min-h-[88px] resize-none rounded-lg border-[#dfe5f1] bg-white px-3 py-2.5 pr-14 text-xs font-medium text-[#24304f] placeholder:text-[#a5afc8] focus:ring-[#6f5cff]/25 sm:min-h-[100px] sm:px-4 sm:py-3 sm:pr-16 sm:text-sm"
             maxLength={200}
-            placeholder={text.notesPlaceholder}
             onChange={(event) => setNotes(event.target.value)}
+            placeholder={t("notesPlaceholder")}
+            value={notes}
           />
-          <span className="absolute bottom-3 right-4 text-xs font-semibold text-[#8b95b1]">
+          <span className="absolute bottom-2.5 right-3 text-[11px] font-semibold text-[#8b95b1] sm:bottom-3 sm:right-4 sm:text-xs">
             {notes.length}/200
           </span>
         </div>
@@ -285,21 +283,21 @@ const ModelConfigDialogForm = ({
 
       {error ? <p className="rounded-lg bg-[#fff4f4] px-3 py-2 text-sm text-[#d73737]">{error}</p> : null}
 
-      <div className="grid grid-cols-2 gap-3 pt-1 md:ml-[90px]">
+      <div className="grid grid-cols-2 gap-2.5 pt-1 md:ml-[90px] md:gap-3">
         <DialogClose asChild>
           <Button
-            className="h-11 rounded-lg border border-[#dfe5f1] bg-white text-sm font-bold text-[#4d5878] hover:bg-[#f8f9fe]"
+            className="h-9 rounded-lg border border-[#dfe5f1] bg-white text-xs font-bold text-[#4d5878] hover:bg-[#f8f9fe] sm:h-10 sm:text-sm"
             type="button"
             variant="secondary"
           >
-            {text.cancel}
+            {t("cancel")}
           </Button>
         </DialogClose>
         <Button
-          className="h-11 rounded-lg bg-[#6b50f4] text-sm font-bold text-white shadow-[0_12px_24px_rgba(91,77,245,0.24)] hover:bg-[#5c45df]"
+          className="h-9 rounded-lg bg-[#6b50f4] text-xs font-bold text-white shadow-[0_12px_24px_rgba(91,77,245,0.24)] hover:bg-[#5c45df] sm:h-10 sm:text-sm"
           type="submit"
         >
-          {text.save}
+          {t("save")}
         </Button>
       </div>
     </form>
@@ -313,30 +311,29 @@ export const ModelConfigDialog = ({
   onOpenChange,
   onSave,
 }: ModelConfigDialogProps) => {
+  const t = useTranslations("Models");
   const initialOption = useMemo(
-    () =>
-      options.find((option) => option.id === model?.model_option_id) ??
-      options[0],
+    () => options.find((option) => option.id === model?.model_option_id) ?? options[0],
     [model?.model_option_id, options],
   );
   const formKey = `${model?.id ?? "new"}-${initialOption?.id ?? "empty"}-${open ? "open" : "closed"}`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[790px] rounded-xl border-[#dfe5f1] bg-white p-0 shadow-[0_28px_80px_rgba(39,48,91,0.2)]">
-        <DialogHeader className="mb-0 border-b border-transparent px-8 pb-4 pt-8">
-          <DialogTitle className="text-2xl font-bold text-[#101a40]">
-            {model ? text.editTitle : text.addTitle}
+      <DialogContent className="max-h-[calc(100vh-1.5rem)] w-[calc(100vw-1rem)] max-w-[790px] rounded-xl border-[#dfe5f1] bg-white p-0 shadow-[0_28px_80px_rgba(39,48,91,0.2)] sm:max-h-[90vh] sm:w-[calc(100vw-2rem)]">
+        <DialogHeader className="mb-0 border-b border-transparent px-4 pb-3 pt-4 sm:px-6 sm:pb-4 sm:pt-6 lg:px-8 lg:pt-8">
+          <DialogTitle className="text-lg font-bold text-[#101a40] sm:text-xl lg:text-2xl">
+            {model ? t("editTitle") : t("addTitle")}
           </DialogTitle>
         </DialogHeader>
-        <div className="px-8 pb-8">
+        <div className="px-4 pb-4 sm:px-6 sm:pb-6 lg:px-8 lg:pb-8">
           <ModelConfigDialogForm
             key={formKey}
-            options={options}
-            model={model}
             initialOption={initialOption}
+            model={model}
             onOpenChange={onOpenChange}
             onSave={onSave}
+            options={options}
           />
         </div>
       </DialogContent>

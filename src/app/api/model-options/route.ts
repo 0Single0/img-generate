@@ -14,6 +14,7 @@ export const GET = async () => {
   const { data, error } = await supabase
     .from("model_options")
     .select("*")
+    .eq("provider_key", "openai")
     .eq("enabled", true)
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: true })

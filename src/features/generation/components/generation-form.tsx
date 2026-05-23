@@ -10,6 +10,7 @@ import {
   Sparkles,
   Trash2,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -28,6 +29,7 @@ import { useGenerationStore } from "@/store/generation-store";
 import type { GenerationOperation, GenerationParams, ModelConfig } from "@/types/provider";
 
 type GenerationFormProps = {
+  emptyModelLabel: string;
   models: ModelConfig[];
 };
 
@@ -44,35 +46,6 @@ type UploadAsset = {
   name: string;
 };
 
-const text = {
-  clearResults: "\u6e05\u7a7a\u7ed3\u679c",
-  configTitle: "\u751f\u6210\u914d\u7f6e",
-  emptyDescription: "\u5b8c\u6210\u751f\u6210\u540e\uff0c\u8fd9\u91cc\u4f1a\u5c55\u793a\u5b9e\u9645\u8fd4\u56de\u7684\u56fe\u50cf\u3002",
-  emptyTitle: "\u6682\u65e0\u751f\u6210\u7ed3\u679c",
-  generate: "\u751f\u6210\u56fe\u50cf",
-  generating: "\u751f\u6210\u4e2d...",
-  mask: "\u906e\u7f69",
-  maskOptional: "\u53ef\u9009",
-  model: "\u6a21\u578b",
-  prompt: "\u63d0\u793a\u8bcd",
-  quality: "\u8d28\u91cf",
-  quantity: "\u6570\u91cf",
-  reference: "\u53c2\u8003\u56fe",
-  referenceOptional: "\u53ef\u9009",
-  resultHint: "\u63d0\u793a\uff1a\u5c1d\u8bd5\u8c03\u6574\u63d0\u793a\u8bcd\u3001\u53c2\u8003\u56fe\u6216\u53c2\u6570\uff0c\u83b7\u5f97\u66f4\u6ee1\u610f\u7684\u7ed3\u679c\u3002",
-  resultTitle: "\u751f\u6210\u7ed3\u679c",
-  size: "\u5c3a\u5bf8",
-  uploadMask: "\u70b9\u51fb\u4e0a\u4f20\u906e\u7f69\u56fe",
-  uploadReference: "\u70b9\u51fb\u4e0a\u4f20\u53c2\u8003\u56fe",
-  uploadTip: "\u652f\u6301 JPG / PNG\uff0c\u6700\u5927 10MB",
-} as const;
-
-const qualityOptions = [
-  { label: "\u6807\u51c6", value: "auto" },
-  { label: "\u9ad8", value: "high" },
-  { label: "\u8d85\u9ad8", value: "medium" },
-];
-
 const getSizeOptions = (provider?: ModelConfig["provider"]) =>
   provider === "seedream"
     ? ["1024x1024", "2K", "4K"]
@@ -88,17 +61,17 @@ const getSizeOptions = (provider?: ModelConfig["provider"]) =>
         "2160x3840",
       ];
 
-const getSizeLabel = (size: string) => {
+const getSizeLabel = (size: string, autoLabel: string) => {
   const labels: Record<string, string> = {
-    auto: "\u81ea\u52a8",
-    "1024x1024": "1:1 (1024 \u00d7 1024)",
-    "1024x1536": "2:3 (1024 \u00d7 1536)",
-    "1536x1024": "3:2 (1536 \u00d7 1024)",
-    "2048x2048": "2K 1:1 (2048 \u00d7 2048)",
-    "2048x1152": "2K 16:9 (2048 \u00d7 1152)",
-    "1152x2048": "2K 9:16 (1152 \u00d7 2048)",
-    "3840x2160": "4K 16:9 (3840 \u00d7 2160)",
-    "2160x3840": "4K 9:16 (2160 \u00d7 3840)",
+    auto: autoLabel,
+    "1024x1024": "1:1 (1024 x 1024)",
+    "1024x1536": "2:3 (1024 x 1536)",
+    "1536x1024": "3:2 (1536 x 1024)",
+    "2048x2048": "2K 1:1 (2048 x 2048)",
+    "2048x1152": "2K 16:9 (2048 x 1152)",
+    "1152x2048": "2K 9:16 (1152 x 2048)",
+    "3840x2160": "4K 16:9 (3840 x 2160)",
+    "2160x3840": "4K 9:16 (2160 x 3840)",
     "2K": "2K",
     "4K": "4K",
   };
@@ -141,6 +114,8 @@ const UploadBox = ({
   isUploading,
   onDelete,
   onFiles,
+  uploadTip,
+  deleteLabel,
 }: {
   icon: "image" | "file";
   label: string;
@@ -150,6 +125,8 @@ const UploadBox = ({
   isUploading?: boolean;
   onDelete: (asset: UploadAsset) => void;
   onFiles: (files: FileList | File[]) => void;
+  uploadTip: string;
+  deleteLabel: string;
 }) => {
   const Icon = icon === "image" ? ImageIcon : FileImage;
   const inputRef = useRef<HTMLInputElement>(null);
@@ -183,6 +160,7 @@ const UploadBox = ({
     },
     [onFiles],
   );
+
   const hasAssets = assets.length > 0;
 
   return (
@@ -213,7 +191,7 @@ const UploadBox = ({
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img alt="" className="h-full min-h-[36px] w-full object-cover" src={asset.previewUrl} />
                 <button
-                  aria-label="Delete image"
+                  aria-label={deleteLabel}
                   className="absolute right-1 top-1 flex size-5 items-center justify-center rounded-full bg-black/55 text-white opacity-100 transition-colors hover:bg-black/75"
                   disabled={disabled || isDeleting}
                   onClick={(event) => {
@@ -247,13 +225,14 @@ const UploadBox = ({
         </span>
       ) : null}
       {!hasAssets ? (
-        <span className="relative z-10 mt-1 text-[11px] text-[#98a1bc]">{text.uploadTip}</span>
+        <span className="relative z-10 mt-1 text-[11px] text-[#98a1bc]">{uploadTip}</span>
       ) : null}
     </div>
   );
 };
 
-export const GenerationForm = ({ models }: GenerationFormProps) => {
+export const GenerationForm = ({ emptyModelLabel, models }: GenerationFormProps) => {
+  const t = useTranslations("Generate");
   const reusePrompt = useGenerationStore((state) => state.reusePrompt);
   const isGenerating = useGenerationStore((state) => state.isGenerating);
   const selectedModelId = useGenerationStore((state) => state.selectedModelId);
@@ -278,18 +257,28 @@ export const GenerationForm = ({ models }: GenerationFormProps) => {
   const { result, error, generate } = useGeneration();
 
   const enabledModels = useMemo(() => models.filter((model) => model.enabled), [models]);
-
   const selectedModel = useMemo(
     () => enabledModels.find((model) => model.id === selectedModelId) ?? enabledModels[0],
     [enabledModels, selectedModelId],
   );
-
   const sizeOptions = useMemo(() => getSizeOptions(selectedModel?.provider), [selectedModel?.provider]);
   const selectedSize = resolveSelectedSize(params.size, sizeOptions);
   const quantity = params.n ?? 1;
   const promptLength = prompt.length;
   const isUploadingAsset = Boolean(uploadingFields.reference || uploadingFields.mask);
   const isDeletingAsset = deletingAssetPaths.size > 0;
+  const qualityOptions = useMemo(
+    () => [
+      { label: t("qualityStandard"), value: "auto" },
+      { label: t("qualityHigh"), value: "high" },
+      { label: t("qualityUltra"), value: "medium" },
+    ],
+    [t],
+  );
+  const getLocalizedSizeLabel = useCallback(
+    (size: string) => getSizeLabel(size, t("sizeAuto")),
+    [t],
+  );
 
   const handleParamsChange = useCallback((nextParams: GenerationParams) => {
     setParams(nextParams);
@@ -302,39 +291,42 @@ export const GenerationForm = ({ models }: GenerationFormProps) => {
     [handleParamsChange, params],
   );
 
-  const handleUploadFiles = useCallback(async (field: UploadField, files: FileList | File[]) => {
-    const imageFiles = Array.from(files).filter((item) => item.type.startsWith("image/"));
+  const handleUploadFiles = useCallback(
+    async (field: UploadField, files: FileList | File[]) => {
+      const imageFiles = Array.from(files).filter((item) => item.type.startsWith("image/"));
 
-    if (!imageFiles.length) {
-      return;
-    }
+      if (!imageFiles.length) {
+        return;
+      }
 
-    setUploadingFields((current) => ({ ...current, [field]: true }));
-    setUploadError("");
+      setUploadingFields((current) => ({ ...current, [field]: true }));
+      setUploadError("");
 
-    try {
-      const nextAssets = await Promise.all(
-        imageFiles.map(async (file) => {
-          const { path } = await uploadGenerationAsset(file);
+      try {
+        const nextAssets = await Promise.all(
+          imageFiles.map(async (file) => {
+            const { path } = await uploadGenerationAsset(file);
 
-          return {
-            path,
-            previewUrl: URL.createObjectURL(file),
-            name: file.name || (field === "reference" ? text.reference : text.mask),
-          };
-        }),
-      );
+            return {
+              path,
+              previewUrl: URL.createObjectURL(file),
+              name: file.name || (field === "reference" ? t("reference") : t("mask")),
+            };
+          }),
+        );
 
-      setUploadAssets((current) => ({
-        ...current,
-        [field]: [...current[field], ...nextAssets],
-      }));
-    } catch (caught) {
-      setUploadError(caught instanceof Error ? caught.message : "Failed to upload image.");
-    } finally {
-      setUploadingFields((current) => ({ ...current, [field]: false }));
-    }
-  }, []);
+        setUploadAssets((current) => ({
+          ...current,
+          [field]: [...current[field], ...nextAssets],
+        }));
+      } catch (caught) {
+        setUploadError(caught instanceof Error ? caught.message : "Failed to upload image.");
+      } finally {
+        setUploadingFields((current) => ({ ...current, [field]: false }));
+      }
+    },
+    [t],
+  );
 
   const handleDeleteUploadAsset = useCallback(async (field: UploadField, asset: UploadAsset) => {
     setDeletingAssetPaths((current) => new Set(current).add(asset.path));
@@ -454,7 +446,7 @@ export const GenerationForm = ({ models }: GenerationFormProps) => {
   if (enabledModels.length === 0) {
     return (
       <Card className="border-[#edf1f7] bg-white/95 p-5 text-sm text-[#697494]">
-        Add and enable a model before generating images.
+        {emptyModelLabel}
       </Card>
     );
   }
@@ -467,16 +459,13 @@ export const GenerationForm = ({ models }: GenerationFormProps) => {
       <section className="border-b border-[#edf1f7] p-4 sm:p-5 lg:overflow-y-auto lg:border-b-0 lg:border-r lg:p-5">
         <div className="mb-3 flex items-center gap-2 text-[#17213f] sm:mb-4">
           <FileImage className="size-4 text-[#6c55f5]" />
-          <h2 className="text-[15px] font-bold">{text.configTitle}</h2>
+          <h2 className="text-[15px] font-bold">{t("configTitle")}</h2>
         </div>
 
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <div className="text-xs font-semibold text-[#273457]">{text.model}</div>
-            <Select
-              onValueChange={setSelectedModelId}
-              value={selectedModel?.id}
-            >
+            <div className="text-xs font-semibold text-[#273457]">{t("model")}</div>
+            <Select onValueChange={setSelectedModelId} value={selectedModel?.id}>
               <SelectTrigger className="h-9 border-[#e8edf5] bg-white px-3 text-xs font-semibold text-[#253053] shadow-none focus:ring-[#6f5cff]/25">
                 <SelectValue />
               </SelectTrigger>
@@ -493,14 +482,14 @@ export const GenerationForm = ({ models }: GenerationFormProps) => {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <div className="text-xs font-semibold text-[#273457]">
-                {text.prompt} <span className="text-[#8a94b1]">Prompt</span>
+                {t("prompt")} <span className="text-[#8a94b1]">Prompt</span>
               </div>
-              <div className="text-xs font-semibold text-[#a2aac0]">{promptLength}/1000</div>
+              <div className="text-xs font-semibold text-[#a2aac0]">{promptLength}/5000</div>
             </div>
             <div className="relative">
               <Textarea
                 className="min-h-[82px] resize-none rounded-md border-[#e8edf5] bg-white px-3 py-2.5 pr-10 text-xs leading-5 text-[#273457] shadow-none focus:ring-[#6f5cff]/25 sm:min-h-[92px]"
-                maxLength={1000}
+                maxLength={5000}
                 onChange={(event) => setPrompt(event.target.value)}
                 required
                 value={prompt}
@@ -511,7 +500,7 @@ export const GenerationForm = ({ models }: GenerationFormProps) => {
 
           <div className="space-y-1.5">
             <div className="text-xs font-semibold text-[#273457]">
-              {text.size} <span className="text-[#8a94b1]">Size</span>
+              {t("size")} <span className="text-[#8a94b1]">Size</span>
             </div>
             <Select
               onValueChange={(value) => handleParamsChange({ ...params, size: value })}
@@ -523,7 +512,7 @@ export const GenerationForm = ({ models }: GenerationFormProps) => {
               <SelectContent>
                 {sizeOptions.map((size) => (
                   <SelectItem key={size} value={size}>
-                    {getSizeLabel(size)}
+                    {getLocalizedSizeLabel(size)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -532,7 +521,7 @@ export const GenerationForm = ({ models }: GenerationFormProps) => {
 
           <div className="grid gap-3 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:grid-cols-2">
             <div className="space-y-1.5">
-              <div className="text-xs font-semibold text-[#273457]">{text.quantity}</div>
+              <div className="text-xs font-semibold text-[#273457]">{t("quantity")}</div>
               <div className="grid h-8 grid-cols-3 overflow-hidden rounded-md border border-[#e8edf5] bg-white">
                 <button
                   className="text-sm font-semibold text-[#475275] hover:bg-[#f7f7ff]"
@@ -555,7 +544,7 @@ export const GenerationForm = ({ models }: GenerationFormProps) => {
             </div>
 
             <div className="space-y-1.5">
-              <div className="text-xs font-semibold text-[#273457]">{text.quality}</div>
+              <div className="text-xs font-semibold text-[#273457]">{t("quality")}</div>
               <div className="grid h-8 grid-cols-3 rounded-md border border-[#e8edf5] bg-white p-1">
                 {qualityOptions.map((option) => {
                   const isActive = (params.quality ?? "high") === option.value;
@@ -581,32 +570,36 @@ export const GenerationForm = ({ models }: GenerationFormProps) => {
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <div className="mb-1.5 text-xs font-semibold text-[#273457]">
-                {text.reference} <span className="text-[#8a94b1]">({text.referenceOptional})</span>
+                {t("reference")} <span className="text-[#8a94b1]">({t("referenceOptional")})</span>
               </div>
               <UploadBox
                 assets={uploadAssets.reference}
+                deleteLabel={t("deleteImage")}
                 deletingPaths={deletingAssetPaths}
                 disabled={isGenerating}
                 icon="image"
                 isUploading={uploadingFields.reference}
-                label={text.uploadReference}
+                label={t("uploadReference")}
                 onDelete={(asset) => void handleDeleteUploadAsset("reference", asset)}
                 onFiles={(files) => void handleUploadFiles("reference", files)}
+                uploadTip={t("uploadTip")}
               />
             </div>
             <div>
               <div className="mb-1.5 text-xs font-semibold text-[#273457]">
-                {text.mask} <span className="text-[#8a94b1]">({text.maskOptional})</span>
+                {t("mask")} <span className="text-[#8a94b1]">({t("maskOptional")})</span>
               </div>
               <UploadBox
                 assets={uploadAssets.mask}
+                deleteLabel={t("deleteImage")}
                 deletingPaths={deletingAssetPaths}
                 disabled={isGenerating}
                 icon="file"
                 isUploading={uploadingFields.mask}
-                label={text.uploadMask}
+                label={t("uploadMask")}
                 onDelete={(asset) => void handleDeleteUploadAsset("mask", asset)}
                 onFiles={(files) => void handleUploadFiles("mask", files)}
+                uploadTip={t("uploadTip")}
               />
             </div>
           </div>
@@ -621,7 +614,7 @@ export const GenerationForm = ({ models }: GenerationFormProps) => {
               type="submit"
             >
               {isGenerating || isUploadingAsset || isDeletingAsset ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-              {isGenerating ? text.generating : text.generate}
+              {isGenerating ? t("generating") : t("generateButton")}
             </Button>
           </div>
         </div>
@@ -631,10 +624,10 @@ export const GenerationForm = ({ models }: GenerationFormProps) => {
         <div className="mb-3 flex items-center justify-between gap-3 sm:mb-4">
           <div className="flex items-center gap-2.5">
             <ImageIcon className="size-4 text-[#6c55f5]" />
-            <h2 className="text-[15px] font-bold text-[#17213f]">{text.resultTitle}</h2>
+            <h2 className="text-[15px] font-bold text-[#17213f]">{t("resultTitle")}</h2>
           </div>
           <div className="text-xs font-semibold text-[#8b95b1]">
-            {resultImages.length ? `\u5171 ${resultImages.length} \u5f20` : ""}
+            {resultImages.length ? t("resultCount", { count: resultImages.length }) : ""}
           </div>
         </div>
 
@@ -642,7 +635,7 @@ export const GenerationForm = ({ models }: GenerationFormProps) => {
           {isGenerating || isLoadingImages ? (
             <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed border-[#e3e8f2] bg-[#fbfcff] text-sm text-[#7a84a6] sm:rounded-xl">
               <Loader2 className="mr-2 size-4 animate-spin text-[#6b50f4] sm:size-5" />
-              {text.generating}
+              {t("generating")}
             </div>
           ) : resultImages.length > 0 ? (
             <div
@@ -658,7 +651,7 @@ export const GenerationForm = ({ models }: GenerationFormProps) => {
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    alt={prompt || text.resultTitle}
+                    alt={prompt || t("resultTitle")}
                     className={cn(
                       "w-full object-cover",
                       resultImages.length === 1 ? "max-h-[68vh]" : "aspect-[16/9]",
@@ -667,7 +660,7 @@ export const GenerationForm = ({ models }: GenerationFormProps) => {
                   />
                   <div className="absolute bottom-3 right-3 flex gap-2 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
                     <button
-                      aria-label="Download image"
+                      aria-label={t("downloadImage")}
                       className="flex size-9 items-center justify-center rounded-full border border-white/35 bg-black/30 text-white backdrop-blur hover:bg-black/45 sm:size-10"
                       onClick={() => void handleDownloadResult(image, index)}
                       type="button"
@@ -687,8 +680,8 @@ export const GenerationForm = ({ models }: GenerationFormProps) => {
           ) : (
             <div className="flex flex-1 flex-col items-center justify-center rounded-lg border border-dashed border-[#e3e8f2] bg-[#fbfcff] px-4 text-center sm:rounded-xl sm:px-6">
               <ImageIcon className="mb-3 size-8 text-[#a7b0c9] sm:mb-4 sm:size-10" />
-              <p className="text-sm font-bold text-[#455071]">{text.emptyTitle}</p>
-              <p className="mt-1.5 max-w-sm text-xs leading-5 text-[#8a94b1] sm:mt-2 sm:text-sm sm:leading-6">{text.emptyDescription}</p>
+              <p className="text-sm font-bold text-[#455071]">{t("emptyTitle")}</p>
+              <p className="mt-1.5 max-w-sm text-xs leading-5 text-[#8a94b1] sm:mt-2 sm:text-sm sm:leading-6">{t("emptyDescription")}</p>
             </div>
           )}
         </div>
@@ -696,7 +689,7 @@ export const GenerationForm = ({ models }: GenerationFormProps) => {
         <div className="mt-4 flex flex-col gap-3 rounded-lg border border-[#edf1f7] bg-white/85 px-3 py-2.5 text-xs leading-5 text-[#697494] sm:mt-5 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-4 sm:py-3 sm:text-sm">
           <div className="flex items-start gap-2 sm:items-center">
             <Sparkles className="mt-0.5 size-3.5 shrink-0 text-[#6b50f4] sm:mt-0 sm:size-4" />
-            {text.resultHint}
+            {t("resultHint")}
           </div>
           {resultImages.length ? (
             <button
@@ -705,7 +698,7 @@ export const GenerationForm = ({ models }: GenerationFormProps) => {
               type="button"
             >
               <Trash2 className="size-3.5 sm:size-4" />
-              {text.clearResults}
+              {t("clearResults")}
             </button>
           ) : null}
         </div>

@@ -3,7 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { EyeOff, LockKeyhole, Mail, Sparkles, User } from "lucide-react";
+import { Eye, EyeOff, LockKeyhole, Mail, Sparkles, User } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,32 +18,21 @@ type AuthFormProps = {
   locale: Locale;
 };
 
-const authText = {
-  login: {
-    title: "欢迎回来",
-    subtitle: "登录账号，继续你的创作之旅",
-    submit: "登录",
-    lead: "还没有账号？",
-    action: "立即注册",
-  },
-  register: {
-    title: "创建账号",
-    subtitle: "加入我们，开启你的创作之旅",
-    submit: "注册",
-    lead: "已有账号？",
-    action: "立即登录",
-  },
-} satisfies Record<AuthMode, Record<string, string>>;
-
 const inputClass =
-  "h-10 rounded-[7px] border-[#dfe3f1] bg-white px-10 text-[13px] font-semibold text-[#080f33] shadow-none placeholder:text-[#8992b1] focus:ring-[#7357f6] 2xl:h-12 2xl:text-sm";
+  "h-9 rounded-[7px] border-[#dfe3f1] bg-white px-10 text-xs font-semibold text-[#080f33] shadow-none placeholder:text-[#8992b1] focus:ring-[#7357f6] sm:h-10 sm:text-[13px] 2xl:h-12 2xl:text-sm";
 
 const hintClass = "mt-1.5 text-[11px] font-semibold text-[#7b84a3] 2xl:text-xs";
 
 const iconClass =
   "pointer-events-none absolute left-4 top-1/2 size-3.5 -translate-y-1/2 text-[#7b84a3] 2xl:size-4";
 
+const passwordToggleClass =
+  "absolute right-2 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-md text-[#7b84a3] transition-colors hover:text-[#5b3ee8] focus:outline-none focus:ring-2 focus:ring-[#7357f6] 2xl:size-9";
+
+const passwordToggleIconClass = "size-3.5 2xl:size-4";
+
 export const AuthForm = ({ mode, locale }: AuthFormProps) => {
+  const t = useTranslations("Auth");
   const router = useRouter();
   const [viewMode, setViewMode] = useState<AuthMode>(mode);
   const [email, setEmail] = useState("");
@@ -50,13 +40,32 @@ export const AuthForm = ({ mode, locale }: AuthFormProps) => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [remember, setRemember] = useState(true);
-  const [accepted, setAccepted] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
 
   const isRegister = viewMode === "register";
-  const text = authText[viewMode];
+  const text = useMemo(
+    () =>
+      isRegister
+        ? {
+            title: t("createAccount"),
+            subtitle: t("createAccountSubtitle"),
+            submit: t("register"),
+            lead: t("loginLead"),
+            action: t("loginAction"),
+          }
+        : {
+            title: t("welcomeBack"),
+            subtitle: t("welcomeSubtitle"),
+            submit: t("login"),
+            lead: t("registerLead"),
+            action: t("registerAction"),
+          },
+    [isRegister, t],
+  );
 
   const alternateHref = useMemo(
     () => (isRegister ? `/${locale}/login` : `/${locale}/register`),
@@ -75,6 +84,14 @@ export const AuthForm = ({ mode, locale }: AuthFormProps) => {
     [isRegister, locale, router],
   );
 
+  const handleTogglePasswordVisibility = useCallback(() => {
+    setIsPasswordVisible((visible) => !visible);
+  }, []);
+
+  const handleToggleConfirmPasswordVisibility = useCallback(() => {
+    setIsConfirmPasswordVisible((visible) => !visible);
+  }, []);
+
   const handleSubmit = useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
@@ -82,12 +99,7 @@ export const AuthForm = ({ mode, locale }: AuthFormProps) => {
       setNotice("");
 
       if (isRegister && password !== confirmPassword) {
-        setError("两次输入的密码不一致");
-        return;
-      }
-
-      if (isRegister && !accepted) {
-        setError("请先阅读并同意用户协议和隐私政策");
+        setError(t("passwordMismatch"));
         return;
       }
 
@@ -110,14 +122,14 @@ export const AuthForm = ({ mode, locale }: AuthFormProps) => {
       }
 
       if (isRegister && !result.data.session) {
-        setNotice("注册成功，请先到邮箱中点击确认链接，然后再登录。");
+        setNotice(t("registerSuccessNotice"));
         return;
       }
 
       router.replace(`/${locale}/generate`);
       router.refresh();
     },
-    [accepted, confirmPassword, email, isRegister, locale, password, router, username],
+    [confirmPassword, email, isRegister, locale, password, router, t, username],
   );
 
   return (
@@ -147,11 +159,11 @@ export const AuthForm = ({ mode, locale }: AuthFormProps) => {
           {isRegister ? (
             <>
               <path
-                 d="M96 0 C128 210 150 405 148 560 C146 725 126 875 98 1000 L115 1000 C142 875 164 725 166 560 C168 405 144 210 112 0 Z"
+                d="M96 0 C128 210 150 405 148 560 C146 725 126 875 98 1000 L115 1000 C142 875 164 725 166 560 C168 405 144 210 112 0 Z"
                 fill="#e9e3ff"
               />
               <path
-                   d="M880 0 H112 C144 210 168 405 166 560 C164 725 142 875 115 1000 H880 Z"
+                d="M880 0 H112 C144 210 168 405 166 560 C164 725 142 875 115 1000 H880 Z"
                 fill="white"
               />
             </>
@@ -162,13 +174,12 @@ export const AuthForm = ({ mode, locale }: AuthFormProps) => {
                 fill="#e9e3ff"
               />
               <path
-                  d="M0 0 H768 C736 210 712 405 714 560 C716 725 738 875 765 1000 H0 Z"
+                d="M0 0 H768 C736 210 712 405 714 560 C716 725 738 875 765 1000 H0 Z"
                 fill="white"
               />
             </>
           )}
         </svg>
-
 
         <div className="relative z-10 w-full max-w-[390px] 2xl:max-w-[460px]">
           <div className="mb-6 flex items-center gap-3 2xl:mb-8">
@@ -204,12 +215,12 @@ export const AuthForm = ({ mode, locale }: AuthFormProps) => {
                     required
                     minLength={3}
                     maxLength={20}
-                    placeholder="用户名"
+                    placeholder={t("username")}
                     className={inputClass}
                     onChange={(event) => setUsername(event.target.value)}
                   />
                 </div>
-                <p className={hintClass}>用户名支持 3-20 位字母、数字或下划线</p>
+                <p className={hintClass}>{t("usernameHint")}</p>
               </div>
             ) : null}
 
@@ -221,7 +232,7 @@ export const AuthForm = ({ mode, locale }: AuthFormProps) => {
                   value={email}
                   required
                   autoComplete="email"
-                  placeholder={isRegister ? "邮箱地址" : "邮箱或用户名"}
+                  placeholder={isRegister ? t("emailAddress") : t("emailOrUsername")}
                   className={inputClass}
                   onChange={(event) => setEmail(event.target.value)}
                 />
@@ -232,18 +243,30 @@ export const AuthForm = ({ mode, locale }: AuthFormProps) => {
               <div className="relative">
                 <LockKeyhole className={iconClass} />
                 <Input
-                  type="password"
+                  type={isPasswordVisible ? "text" : "password"}
                   value={password}
                   required
                   minLength={6}
                   autoComplete={isRegister ? "new-password" : "current-password"}
-                  placeholder={isRegister ? "设置密码" : "密码"}
+                  placeholder={isRegister ? t("setPassword") : t("password")}
                   className={inputClass}
                   onChange={(event) => setPassword(event.target.value)}
                 />
-                <EyeOff className="pointer-events-none absolute right-4 top-1/2 size-3.5 -translate-y-1/2 text-[#7b84a3] 2xl:size-4" />
+                <button
+                  type="button"
+                  aria-label={isPasswordVisible ? t("hidePassword") : t("showPassword")}
+                  title={isPasswordVisible ? t("hidePassword") : t("showPassword")}
+                  className={passwordToggleClass}
+                  onClick={handleTogglePasswordVisibility}
+                >
+                  {isPasswordVisible ? (
+                    <EyeOff className={passwordToggleIconClass} />
+                  ) : (
+                    <Eye className={passwordToggleIconClass} />
+                  )}
+                </button>
               </div>
-              {isRegister ? <p className={hintClass}>密码需包含至少 6 位字符</p> : null}
+              {isRegister ? <p className={hintClass}>{t("passwordHint")}</p> : null}
             </div>
 
             {isRegister ? (
@@ -251,37 +274,34 @@ export const AuthForm = ({ mode, locale }: AuthFormProps) => {
                 <div className="relative">
                   <LockKeyhole className={iconClass} />
                   <Input
-                    type="password"
+                    type={isConfirmPasswordVisible ? "text" : "password"}
                     value={confirmPassword}
                     required
                     minLength={6}
                     autoComplete="new-password"
-                    placeholder="确认密码"
+                    placeholder={t("confirmPassword")}
                     className={inputClass}
                     onChange={(event) => setConfirmPassword(event.target.value)}
                   />
-                  <EyeOff className="pointer-events-none absolute right-4 top-1/2 size-3.5 -translate-y-1/2 text-[#7b84a3] 2xl:size-4" />
+                  <button
+                    type="button"
+                    aria-label={isConfirmPasswordVisible ? t("hidePassword") : t("showPassword")}
+                    title={isConfirmPasswordVisible ? t("hidePassword") : t("showPassword")}
+                    className={passwordToggleClass}
+                    onClick={handleToggleConfirmPasswordVisibility}
+                  >
+                    {isConfirmPasswordVisible ? (
+                      <EyeOff className={passwordToggleIconClass} />
+                    ) : (
+                      <Eye className={passwordToggleIconClass} />
+                    )}
+                  </button>
                 </div>
-                <p className={hintClass}>请再次输入密码</p>
+                <p className={hintClass}>{t("confirmPasswordHint")}</p>
               </div>
             ) : null}
 
-            {isRegister ? (
-              <label className="flex items-center gap-2.5 pt-1 text-xs font-semibold text-[#7b84a3] 2xl:text-sm">
-                <input
-                  type="checkbox"
-                  checked={accepted}
-                  className="size-3.5 accent-[#6a45ef] 2xl:size-4"
-                  onChange={(event) => setAccepted(event.target.checked)}
-                />
-                <span>
-                  我已阅读并同意
-                  <span className="text-[#5b3ee8]">《用户协议》</span>
-                  和
-                  <span className="text-[#5b3ee8]">《隐私政策》</span>
-                </span>
-              </label>
-            ) : (
+            {isRegister ? null : (
               <div className="flex items-center justify-between pt-1 text-xs font-semibold 2xl:text-sm">
                 <label className="flex items-center gap-2.5 text-[#7b84a3]">
                   <input
@@ -290,11 +310,8 @@ export const AuthForm = ({ mode, locale }: AuthFormProps) => {
                     className="size-3.5 accent-[#6a45ef] 2xl:size-4"
                     onChange={(event) => setRemember(event.target.checked)}
                   />
-                  记住我
+                  {t("rememberMe")}
                 </label>
-                <button type="button" className="text-[#5b3ee8]">
-                  忘记密码？
-                </button>
               </div>
             )}
 

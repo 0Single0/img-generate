@@ -1,4 +1,4 @@
-export type ImageProvider = "chatgpt" | "openai" | "seedream";
+export type ImageProvider = "openai";
 
 export type GenerationOperation = "generation" | "edit";
 
@@ -8,6 +8,7 @@ export type ModelConfig = {
   model_option_id: string;
   provider: ImageProvider;
   provider_label?: string;
+  provider_icon?: string | null;
   display_name: string;
   model_id: string;
   model_label?: string;
@@ -32,6 +33,7 @@ export type ModelOption = {
   id: string;
   provider_key: ImageProvider;
   provider_label: string;
+  icon?: string | null;
   model_id: string;
   model_label: string;
   default_base_url: string;
