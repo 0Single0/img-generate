@@ -7,24 +7,47 @@ type OpenAIImageResponse = {
   }>;
 };
 
+type OpenAIImageRequestBody = {
+  model: string;
+  prompt: string;
+  n: number;
+  size?: string;
+  quality?: string;
+  output_format?: string;
+  output_compression?: number;
+  background?: string;
+  response_format?: "b64_json";
+  image?: string[];
+};
+
 export const generateWithOpenAI = async (
   input: ProviderGenerateInput,
 ): Promise<ProviderImageResult[]> => {
   const endpoint =
     input.operation === "edit" ? "/images/edits" : "/images/generations";
+  const isDalleModel = input.modelId.startsWith("dall-e-");
+  const size = input.params.size && input.params.size !== "auto"
+    ? input.params.size
+    : undefined;
 
-  const body = {
+  const body: OpenAIImageRequestBody = {
     model: input.modelId,
     prompt: input.prompt,
     n: input.params.n ?? 1,
-    size: input.params.size ?? "1024x1024",
+    size,
     quality: input.params.quality,
     output_format: input.params.outputFormat,
     output_compression: input.params.outputCompression,
     background: input.params.background,
-    response_format: "b64_json",
-    image: input.referenceImageUrls,
   };
+
+  if (isDalleModel) {
+    body.response_format = "b64_json";
+  }
+
+  if (input.referenceImageUrls?.length) {
+    body.image = input.referenceImageUrls;
+  }
 
   console.info("[image-provider] upstream request", {
     requestId: input.requestId,

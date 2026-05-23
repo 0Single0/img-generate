@@ -13,7 +13,9 @@ type ModelsPageProps = {
   subtitle: string;
 };
 
-export const ModelsPage = ({ title, subtitle }: ModelsPageProps) => {
+export const ModelsPage = (props: ModelsPageProps) => {
+  void props;
+
   const { models, options, error, isLoading, saveModel, removeModel, runTest } = useModels();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingModel, setEditingModel] = useState<ModelConfig | null>(null);
@@ -29,17 +31,8 @@ export const ModelsPage = ({ title, subtitle }: ModelsPageProps) => {
   }, []);
 
   return (
-    <div className="mx-auto flex h-full min-h-[calc(100dvh-var(--shell-header)-clamp(40px,4.7vw,96px))] max-w-[1680px] flex-col">
-      <div className="mb-5 flex flex-col gap-4 sm:mb-7 md:flex-row md:items-end md:justify-between">
-        <div>
-          <h1 className="text-[clamp(24px,2vw,34px)] font-bold text-[#101a40]">{title}</h1>
-          <p className="mt-2 text-sm font-medium leading-6 text-[#697494] sm:text-base">
-            {subtitle}
-          </p>
-        </div>
-      </div>
-
-      <section className="flex flex-1 flex-col rounded-xl border border-[#e7ebf5] bg-white/86 p-4 shadow-[0_18px_48px_rgba(58,68,116,0.08)] backdrop-blur-xl sm:p-5 lg:p-7">
+    <div className="flex min-h-0 w-full flex-1 flex-col">
+      <section className="flex min-h-0 w-full flex-1 flex-col rounded-xl border border-[#e7ebf5] bg-white/86 p-4 shadow-[0_18px_48px_rgba(58,68,116,0.08)] backdrop-blur-xl sm:p-5 lg:p-7">
         <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-base font-bold text-[#17213f] sm:text-lg">模型列表</h2>

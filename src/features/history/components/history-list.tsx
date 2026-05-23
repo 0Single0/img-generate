@@ -7,6 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Copy,
+  Download,
   Eye,
   ImageOff,
   Loader2,
@@ -25,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { downloadImageFromUrl, getImageDownloadName } from "@/lib/download/image";
 import { cn } from "@/lib/utils/cn";
 import { createSignedUrl, deleteGeneration, listGenerations } from "../api/history-api";
 import type { GenerationListParams, GenerationRecord } from "@/types/provider";
@@ -427,6 +429,19 @@ export const HistoryList = ({ emptyLabel }: HistoryListProps) => {
     }
   }, []);
 
+  const handleDownloadPreview = useCallback(async () => {
+    const image = previewImages[previewIndex];
+
+    if (!image) {
+      return;
+    }
+
+    await downloadImageFromUrl(
+      image.url,
+      getImageDownloadName(image.path, `history-${previewIndex + 1}.png`),
+    );
+  }, [previewImages, previewIndex]);
+
   useEffect(() => {
     let isMounted = true;
 
@@ -496,7 +511,7 @@ export const HistoryList = ({ emptyLabel }: HistoryListProps) => {
   }, [previewUrls, records]);
 
   return (
-    <div className="flex min-h-[calc(100vh-var(--shell-header)-72px)] flex-col gap-4">
+    <div className="flex min-h-0 w-full flex-1 flex-col gap-4">
       <Card className="border-[#edf1f7] bg-white/95 p-3 shadow-[0_10px_28px_rgba(66,74,112,0.06)]">
         <div className="flex flex-wrap items-center gap-2">
           <label className="relative h-10 w-full max-w-[380px] sm:w-[320px] xl:w-[360px]">
@@ -575,8 +590,8 @@ export const HistoryList = ({ emptyLabel }: HistoryListProps) => {
 
       {error ? <p className="rounded-md bg-[#fff4f4] px-4 py-3 text-sm text-[#d73737]">{error}</p> : null}
 
-      <Card className="flex flex-1 flex-col overflow-hidden border-[#edf1f7] bg-white/95 p-2 shadow-[0_14px_38px_rgba(68,78,122,0.08)]">
-        <div className="relative flex-1 overflow-auto">
+      <Card className="flex min-h-0 flex-1 flex-col overflow-hidden border-[#edf1f7] bg-white/95 p-2 shadow-[0_14px_38px_rgba(68,78,122,0.08)]">
+        <div className="relative min-h-0 flex-1 overflow-auto">
           {isLoading ? (
             <div className="absolute inset-0 z-10 flex min-h-80 items-center justify-center bg-white/70 backdrop-blur-[1px]">
               <Loader2 className="size-6 animate-spin text-[#5b3ff2]" />
@@ -763,6 +778,16 @@ export const HistoryList = ({ emptyLabel }: HistoryListProps) => {
               ) : (
                 <Loader2 className="size-7 animate-spin text-[#6b50f4]" />
               )}
+              {previewImages.length ? (
+                <button
+                  aria-label="Download image"
+                  className="absolute bottom-4 right-4 flex size-10 items-center justify-center rounded-full border border-white/35 bg-black/35 text-white shadow-sm backdrop-blur hover:bg-black/50"
+                  onClick={() => void handleDownloadPreview()}
+                  type="button"
+                >
+                  <Download className="size-5" />
+                </button>
+              ) : null}
               {previewImages.length > 1 ? (
                 <>
                   <button

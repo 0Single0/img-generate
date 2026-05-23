@@ -226,7 +226,6 @@ export const AuthForm = ({ mode, locale }: AuthFormProps) => {
                   onChange={(event) => setEmail(event.target.value)}
                 />
               </div>
-              {isRegister ? <p className={hintClass}>我们将发送验证邮件到此邮箱</p> : null}
             </div>
 
             <div>
@@ -244,7 +243,7 @@ export const AuthForm = ({ mode, locale }: AuthFormProps) => {
                 />
                 <EyeOff className="pointer-events-none absolute right-4 top-1/2 size-3.5 -translate-y-1/2 text-[#7b84a3] 2xl:size-4" />
               </div>
-              {isRegister ? <p className={hintClass}>密码需包含至少 8 位字符，包含字母和数字</p> : null}
+              {isRegister ? <p className={hintClass}>密码需包含至少 6 位字符</p> : null}
             </div>
 
             {isRegister ? (

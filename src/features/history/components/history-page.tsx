@@ -7,7 +7,7 @@ type HistoryPageProps = {
 };
 
 export const HistoryPage = ({ emptyLabel }: HistoryPageProps) => (
-  <div>
+  <div className="flex min-h-0 w-full flex-1 flex-col">
     <HistoryList emptyLabel={emptyLabel} />
   </div>
 );

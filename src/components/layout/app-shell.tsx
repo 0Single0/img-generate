@@ -26,10 +26,10 @@ export const AppShell = async ({ children, locale, user }: AppShellProps) => {
             <Sparkles className="size-[clamp(18px,1.1vw,23px)] fill-white" strokeWidth={1.8} />
           </span>
           <span className="leading-tight">
-            <span className="block text-[clamp(18px,1.08vw,23px)] font-bold tracking-normal text-[#091235]">
+            <span className="block text-[15px] font-bold tracking-normal text-[#091235]">
               Image2Gen
             </span>
-            <span className="mt-0.5 block text-[clamp(11px,0.66vw,13px)] font-medium text-[#7b84a6]">
+            <span className="mt-0.5 block text-[11px] font-medium text-[#7b84a6]">
               AI Image Generator
             </span>
           </span>
@@ -50,7 +50,7 @@ export const AppShell = async ({ children, locale, user }: AppShellProps) => {
         />
       </aside>
       <div className="min-h-screen pt-[var(--shell-header)] md:pl-[var(--shell-sidebar)]">
-        <main className="min-h-[calc(100vh-var(--shell-header))] overflow-hidden bg-[radial-gradient(circle_at_98%_96%,rgba(115,82,255,0.32)_0,rgba(115,82,255,0.14)_22%,transparent_42%),linear-gradient(180deg,#fbfcff_0%,#f8f9ff_58%,#f1edff_100%)] px-[clamp(16px,2.15vw,40px)] py-[clamp(20px,2.35vw,48px)]">
+        <main className="flex h-[calc(100dvh-var(--shell-header))] min-h-0 overflow-y-auto bg-[radial-gradient(circle_at_98%_96%,rgba(115,82,255,0.32)_0,rgba(115,82,255,0.14)_22%,transparent_42%),linear-gradient(180deg,#fbfcff_0%,#f8f9ff_58%,#f1edff_100%)] px-[clamp(14px,1.8vw,18px)] py-[clamp(14px,1.7vw,18px)] lg:overflow-hidden">
           {children}
         </main>
       </div>

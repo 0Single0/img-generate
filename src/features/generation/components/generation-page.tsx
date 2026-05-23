@@ -29,7 +29,7 @@ export const GenerationPage = (props: GenerationPageProps) => {
   }, []);
 
   return (
-    <div>
+    <div className="flex min-h-full w-full flex-1 flex-col">
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
       <GenerationForm models={models} />
     </div>
