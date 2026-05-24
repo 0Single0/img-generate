@@ -6,7 +6,6 @@ import {
   FileImage,
   ImageIcon,
   Loader2,
-  MoreHorizontal,
   Sparkles,
   Trash2,
 } from "lucide-react";
@@ -664,12 +663,6 @@ export const GenerationForm = ({ emptyModelLabel, models }: GenerationFormProps)
                       type="button"
                     >
                       <Download className="size-4 sm:size-5" />
-                    </button>
-                    <button
-                      className="flex size-9 items-center justify-center rounded-full border border-white/35 bg-black/30 text-white backdrop-blur hover:bg-black/45 sm:size-10"
-                      type="button"
-                    >
-                      <MoreHorizontal className="size-4 sm:size-5" />
                     </button>
                   </div>
                 </figure>
