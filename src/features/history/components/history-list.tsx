@@ -117,6 +117,19 @@ const formatDateTime = (value?: string) => {
   )}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
 };
 
+const formatDuration = (durationMs?: number | null) => {
+  if (typeof durationMs !== "number" || Number.isNaN(durationMs) || durationMs < 0) {
+    return "-";
+  }
+
+  if (durationMs < 1000) {
+    return `${durationMs}ms`;
+  }
+
+  const durationSeconds = durationMs / 1000;
+  return `${durationSeconds.toFixed(durationSeconds >= 10 ? 0 : 1)}s`;
+};
+
 const getDateEnd = (value: string) => (value ? `${value}T23:59:59.999` : undefined);
 
 const getSizeLabel = (record: GenerationRecord) => record.params.size ?? "1024 x 1024";
@@ -665,7 +678,7 @@ export const HistoryList = ({ emptyLabel }: HistoryListProps) => {
                           {statusLabels[status]}
                         </span>
                       </td>
-                      <td className="px-3 text-[#273457]">{status === "succeeded" ? "18.6s" : "-"}</td>
+                      <td className="px-3 text-[#273457]">{formatDuration(record.duration_ms)}</td>
                       <td className="px-3 text-[#4f5d84]">{formatDateTime(record.created_at)}</td>
                       <td className="px-3">
                         <div className="flex items-center gap-2">

@@ -68,6 +68,8 @@ export type GenerationRecord = {
   status: "pending" | "succeeded" | "failed";
   error_message?: string | null;
   created_at?: string;
+  completed_at?: string | null;
+  duration_ms?: number | null;
 };
 
 export type GenerationListParams = {

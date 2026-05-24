@@ -142,6 +142,7 @@ export const POST = async (request: Request) => {
   }
 
   const requestId = body.requestId ?? crypto.randomUUID();
+  const startedAt = Date.now();
 
   const { data: model, error: modelError } = await supabase
     .from("model_configs")
@@ -236,6 +237,8 @@ export const POST = async (request: Request) => {
     const { data: completed, error: completeError } = await supabase
       .from("generation_records")
       .update({
+        completed_at: new Date().toISOString(),
+        duration_ms: Math.max(0, Date.now() - startedAt),
         status: "succeeded",
         output_image_paths: outputPaths,
       })
@@ -258,7 +261,12 @@ export const POST = async (request: Request) => {
 
     await supabase
       .from("generation_records")
-      .update({ status: "failed", error_message: message })
+      .update({
+        completed_at: new Date().toISOString(),
+        duration_ms: Math.max(0, Date.now() - startedAt),
+        status: "failed",
+        error_message: message,
+      })
       .eq("id", record.id)
       .eq("user_id", user.id);
 
